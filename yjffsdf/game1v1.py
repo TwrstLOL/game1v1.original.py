@@ -1,4 +1,5 @@
 import pygame
+import sys
 
 # Инициализация Pygame
 pygame.init()
@@ -52,6 +53,9 @@ player2_attack_timer = 0
 player1_block_timer = 0
 player2_block_timer = 0
 
+# Определение кулдауна для блока атаки
+BLOCK_COOLDOWN = FPS * 5
+
 # Определение шрифта для отображения текста
 font = pygame.font.SysFont(None, 36)
 
@@ -71,12 +75,6 @@ def draw_players():
         screen.blit(block_img, (20, 60))
     if player2_block_timer > 0:
         screen.blit(block_img, (WIDTH - 70, 60))
-
-# Функция проверки блокировки атаки
-def check_attack_block(player_block_timer):
-    if player_block_timer > 0:
-        return True
-    return False
 
 # Основной игровой цикл
 running = True
@@ -113,40 +111,44 @@ while running:
     player2_y = max(0, min(HEIGHT - 100, player2_y))
 
     # Проверка блокировки атаки для игрока 1
-    if check_attack_block(player1_block_timer):
+    if player1_block_timer > 0:
         player1_block_timer -= 1
         if player1_block_timer == 0:
             player1_speed = 5  # Восстановление скорости игрока 1
     else:
         # Атака игрока 1
-        if keys[pygame.K_LSHIFT] and player1_attack_timer <= 0:
+        if keys[pygame.K_LCTRL] and player1_attack_timer <= 0:
             if abs(player1_x - player2_x) < 50 and abs(player1_y - player2_y) < 50:
                 player2_health -= 10
                 player1_attack_timer = ATTACK_COOLDOWN
-                # Установка таймера блокировки атаки для игрока 2
-                player2_block_timer = FPS * 5  # Блокировка атаки на 5 секунд
-                player2_speed = 2  # Замедление скорости игрока 2 на 2 секунды
 
     # Проверка блокировки атаки для игрока 2
-    if check_attack_block(player2_block_timer):
+    if player2_block_timer > 0:
         player2_block_timer -= 1
         if player2_block_timer == 0:
             player2_speed = 5  # Восстановление скорости игрока 2
     else:
         # Атака игрока 2
-        if keys[pygame.K_RSHIFT] and player2_attack_timer <= 0:
+        if keys[pygame.K_RCTRL] and player2_attack_timer <= 0:
             if abs(player1_x - player2_x) < 50 and abs(player1_y - player2_y) < 50:
                 player1_health -= 10
                 player2_attack_timer = ATTACK_COOLDOWN
-                # Установка таймера блокировки атаки для игрока 1
-                player1_block_timer = FPS * 5  # Блокировка атаки на 5 секунд
-                player1_speed = 2  # Замедление скорости игрока 1 на 2 секунды
 
     # Обновление таймеров атаки
     if player1_attack_timer > 0:
         player1_attack_timer -= 1
     if player2_attack_timer > 0:
         player2_attack_timer -= 1
+
+    # Установка блока атаки и кулдауна для игрока 1
+    if keys[pygame.K_LSHIFT]:
+        player1_block_timer = FPS * 2
+        player1_speed = 2  # Замедление скорости игрока 1 на 2 секунды
+
+    # Установка блока атаки и кулдауна для игрока 2
+    if keys[pygame.K_RSHIFT]:
+        player2_block_timer = FPS * 2
+        player2_speed = 2  # Замедление скорости игрока 2 на 2 секунды
 
     # Очистка экрана
     screen.fill(WHITE)
@@ -170,3 +172,4 @@ while running:
 
 # Выход из Pygame
 pygame.quit()
+sys.exit()
